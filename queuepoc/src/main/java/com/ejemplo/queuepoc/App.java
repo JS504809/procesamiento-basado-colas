@@ -1,6 +1,8 @@
 package com.ejemplo.queuepoc;
 import com.azure.storage.queue.*;
 import com.azure.storage.queue.models.*;
+import com.azure.identity.DefaultAzureCredentialBuilder;
+import io.github.cdimascio.dotenv.Dotenv;
 
 /**
  * Hello world!
@@ -10,16 +12,17 @@ import com.azure.storage.queue.models.*;
 public class App {
     public static void main(String[] args) {
         // Parámetros de conexión
-        String ACCOUNT_NAME = "pfazlabsa01";
-        String queueName = "testqueue";
-        // del 03 al 14 de noviembre, 2025.
-        String SAS_TOKEN = "sv=2024-11-04&ss=q&srt=sco&sp=rwdlacup&se=2025-11-14T23:56:13Z&st=2025-11-03T15:41:13Z&spr=https&sig=EuA%2FwP4dXV7lKu2Y9Z58Ce%2FMuqOYigWro1nf0iAixIU%3D";
+        Dotenv dotenv = Dotenv.load();
+        String ACCOUNT_NAME = dotenv.get("ACCOUNT_NAME");
+        String QUEUE_NAME = dotenv.get("QUEUE_NAME");
+        String queueURL = String.format("https://%s.queue.core.windows.net/%s", ACCOUNT_NAME, QUEUE_NAME);
+        String SAS_TOKEN = dotenv.get("SAS_TOKEN");
         
-        // Crear el cliente de la cola
-        String queueURL = String.format("https://%s.queue.core.windows.net/%s", ACCOUNT_NAME, queueName);
+        // Configuración de la conexión a Azure Queue Storage
         QueueClient queueClient = new QueueClientBuilder()
             .endpoint(queueURL)
-            .sasToken(SAS_TOKEN)
+            // .sasToken(SAS_TOKEN) // Usar este método si se conecta con SAS Token
+            .credential(new DefaultAzureCredentialBuilder().build()) // Usar este método si se conecta con Managed Identity
             .buildClient();
         queueClient.createIfNotExists();
         

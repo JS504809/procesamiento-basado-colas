@@ -61,8 +61,8 @@ import com.azure.storage.queue.models.*;
 
 public class App {
     public static void main(String[] args) {
-        String connectStr = "<TU_CONNECTION_STRING>";
-        String queueName = "testqueue";
+        String connectStr = "<CONNECTION_STRING>";
+        String queueName = "<QUEUE_NAME>";
 
         QueueClient queueClient = new QueueClientBuilder()
             .connectionString(connectStr)
