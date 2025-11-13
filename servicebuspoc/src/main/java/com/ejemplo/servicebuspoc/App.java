@@ -7,16 +7,13 @@ import io.github.cdimascio.dotenv.Dotenv;
 public class App {
     public static void main(String[] args) {
         Dotenv dotenv = Dotenv.load();
-
         String fullyQualifiedNamespace = dotenv.get("FULLY_QUALIFIED_NAMESPACE");
-        String queueName = dotenv.get("QUEUE_NAME");
-        String topicName = dotenv.get("TOPIC_NAME");
-        String subscriptionName = dotenv.get("SUBSCRIPTION_NAME");
         String sasToken = dotenv.get("SAS_TOKEN");
 
         /*
         * Operaciones con Azure Service Bus - Colas
         */
+        String queueName = dotenv.get("QUEUE_NAME");
         // ----- Envío de mensajes a una queue -----
         try (ServiceBusSenderClient senderClient = new ServiceBusClientBuilder()
                 .credential(fullyQualifiedNamespace, 
@@ -54,7 +51,9 @@ public class App {
         /*
         * Operaciones con Azure Service Bus - Temas y Suscripciones
         */
-       // ----- Envío de mensajes a un topic con propiedades -----
+        String topicName = dotenv.get("TOPIC_NAME");
+        String subscriptionName = dotenv.get("SUBSCRIPTION_NAME");
+        // ----- Envío de mensajes a un topic con propiedades -----
         try (ServiceBusSenderClient senderClient = new ServiceBusClientBuilder()
                 .credential(fullyQualifiedNamespace, 
                     new DefaultAzureCredentialBuilder().build() // Usar este método si se conecta con Managed Identity
@@ -65,16 +64,20 @@ public class App {
                 .buildClient()) {
 
             // Mensaje que será filtrado según properties
-            ServiceBusMessage messageRojo = new ServiceBusMessage("Soy rojo");
-            messageRojo.getApplicationProperties().put("color", "rojo");
+            ServiceBusMessage messagePrioridadAlta = new ServiceBusMessage("Prioridad alta");
+            messagePrioridadAlta.getApplicationProperties().put("prioridad", "alta");
+            
+            ServiceBusMessage messagePrioridadMedia = new ServiceBusMessage("Prioridad media");
+            messagePrioridadMedia.getApplicationProperties().put("prioridad", "media");
 
-            ServiceBusMessage messageAzul = new ServiceBusMessage("Soy azul");
-            messageAzul.getApplicationProperties().put("color", "azul");
+            ServiceBusMessage messagePrioridadBaja = new ServiceBusMessage("Prioridad baja");
+            messagePrioridadBaja.getApplicationProperties().put("prioridad", "baja");
+            
+            senderClient.sendMessage(messagePrioridadAlta);
+            senderClient.sendMessage(messagePrioridadMedia);
+            senderClient.sendMessage(messagePrioridadBaja);
 
-            senderClient.sendMessage(messageRojo);
-            senderClient.sendMessage(messageAzul);
-
-            System.out.println("[Pub/Sub] Enviados mensajes con propiedades color=rojo y color=azul.");
+            System.out.println("[Pub/Sub] Enviados mensajes con propiedades prioridad=alta, prioridad=media y prioridad=baja.");
         }
 
         // ----- Consumo de mensajes desde una suscripción (filtrada en portal) -----
